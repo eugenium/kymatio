@@ -15,7 +15,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Quick Start" href="quickstart.html" />
+    <link rel="next" title="Information for developers" href="developerguide.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,8 +33,127 @@
             
   <div class="section" id="user-guide">
 <h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
-<p>The scattering transform is a signal analysis method that has useful properties
-for the analysis of a variety of signals.</p>
+<div class="section" id="introduction-to-scattering-transform">
+<h2>Introduction to scattering transform<a class="headerlink" href="#introduction-to-scattering-transform" title="Permalink to this headline">¶</a></h2>
+<p>A scattering transform is a non-linear operator that builds
+invariant with respect to euclidean geometric transformations such as translations
+rotations or change of scale.</p>
+<p>A Scattering Network is a complex valued Convolutional Neural Network using predefined
+wavelets filters and the complex modulus as nonlinearity.  A wavelet transform
+propagates asignal throuh each layer, in order to separate structures at different
+scales.  Each operator ofthe cascade is non expansive, and so is the cascade.  Thus
+higher order layers do not sufferfrom high variance.  In other words, this
+representation has mathematical foundations thatmakes  it  amenable  for  mainstream
+statistical  use  on  structured  signals  such  as  naturalimages, textures, audio
+sounds or mollecules.</p>
+<p>Let us consider a set of wavelets <span class="math">\{\psi_\lambda\}_\lambda</span> adjusted such that
+there exists <span class="math">\epsilon_0</span> satisfying:</p>
+<div class="math">
+<p><span class="math">1-\epsilon_0 \leq \sum_\lambda |\hat \psi_\lambda(\omega)|^2 \leq 1</span></p>
+</div></div>
+<div class="section" id="practical-implementation">
+<h2>Practical implementation<a class="headerlink" href="#practical-implementation" title="Permalink to this headline">¶</a></h2>
+<p>Former implementation of the Scattering Transform computed each Scattering coefficients
+layer per layer. Here, we visit the tree of the Scattering path node per node. It permits
+to limit the memory use, and thus benefiting from CUDA accelerations. This is explained on
+REFERENE_FIGURE.</p>
+<a class="reference internal image-reference" href="_images/algorithm.png"><img alt="Graph of the algorithm used" class="align-center" src="_images/algorithm.png" style="width: 600px;" /></a>
+<p>More details about our implementation can be found in SECTION_DU_DEV</p>
+<div class="section" id="d">
+<h3>1-D<a class="headerlink" href="#d" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id1">
+<h3>2-D<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id2">
+<h3>3-D<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>1-D<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id4">
+<h3>2-D<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id5">
+<h3>3-D<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="output-size">
+<h2>Output size<a class="headerlink" href="#output-size" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h3>1-D<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id7">
+<h3>2-D<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>Let us assume that <span class="math">x</span> is a tensor of size <span class="math">(B,C,N_1,N_2)</span>. Then, if the
+output <span class="math">Sx</span> via a Scattering Transform with scale <span class="math">J</span> and <span class="math">L</span> angles will have
+size:</p>
+<div class="math">
+<p><span class="math">(B,C,1+LJ+\frac{L^2J(J-1)}{2},\frac{N_1}{2^J},\frac{N_2}{2^J})</span></p>
+</div></div>
+<div class="section" id="id8">
+<h3>3-D<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="switching-devices-cuda-cpu-or-cuda-cpu">
+<h2>Switching devices: cuda&gt;cpu or cuda&lt;cpu<a class="headerlink" href="#switching-devices-cuda-cpu-or-cuda-cpu" title="Permalink to this headline">¶</a></h2>
+<p>By default, the Scattering Transform is run on CPU:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">scattering</span> <span class="k">import</span> <span class="n">Scattering2D</span>
+<span class="n">scattering</span> <span class="o">=</span> <span class="n">Scattering2D</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+<span class="n">Sx</span> <span class="o">=</span> <span class="n">scattering</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>However, if a GPU combined with CUDA is available, then it is possible to run it on GPU via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scattering</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">Sx_</span> <span class="o">=</span> <span class="n">scattering</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Sx_</span><span class="o">-</span><span class="n">Sx</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, it is possible to redo the computations on CPU via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scattering</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+<span class="n">Sx</span> <span class="o">=</span> <span class="n">scattering</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Sx_</span><span class="o">-</span><span class="n">Sx</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="backend">
+<span id="backend-story"></span><h2>Backend<a class="headerlink" href="#backend" title="Permalink to this headline">¶</a></h2>
+<p>This package is maintained with a flexible backend that currently supports PyTorch. A
+backend corresponds to an implementation of routines, which are optimized for their
+final purpose. For instance, <cite>torch</cite> backend is slightly slower than others backend
+but it has the advantage to be differentiable.</p>
+<p>At installation time, a config files is created in <cite>~/.config/scattering/config.cfg</cite> that
+will contain a backend used by default. This default backend will be overwritten if
+a global environment variable <cite>SCATTERING_BACKEND</cite> is created and not equal to <cite>None</cite>
+and in this case, each backends will use <cite>SCATTERING_BACKEND</cite> as a default backend.
+It is possible to specify more precisely the backend that will be used for each
+signal type as we will see below.</p>
+<div class="section" id="d-backend">
+<h3>1-D backend<a class="headerlink" href="#d-backend" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id9">
+<h3>2-D backend<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>If the global environment variable <cite>SCATTERING_BACKEND_2D</cite> is not equal to <cite>None</cite>, then
+its value will be used at running time as the backend. Currently, two backends exist:</p>
+<ul class="simple">
+<li><cite>torch</cite>: the scattering is differentiable w.r.t. its parameters, however it can be too slow to be amenable for large scale classification.</li>
+<li><cite>skcuda</cite>: the scattering is not differentiable but is optimized to deliver fast computations.</li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h3>3-D backend<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="benchmark-with-previous-versions">
+<h2>Benchmark with previous versions<a class="headerlink" href="#benchmark-with-previous-versions" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -41,11 +161,46 @@ for the analysis of a variety of signals.</p>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">User Guide</a><ul>
+<li><a class="reference internal" href="#introduction-to-scattering-transform">Introduction to scattering transform</a></li>
+<li><a class="reference internal" href="#practical-implementation">Practical implementation</a><ul>
+<li><a class="reference internal" href="#d">1-D</a></li>
+<li><a class="reference internal" href="#id1">2-D</a></li>
+<li><a class="reference internal" href="#id2">3-D</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#id3">1-D</a></li>
+<li><a class="reference internal" href="#id4">2-D</a></li>
+<li><a class="reference internal" href="#id5">3-D</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#output-size">Output size</a><ul>
+<li><a class="reference internal" href="#id6">1-D</a></li>
+<li><a class="reference internal" href="#id7">2-D</a></li>
+<li><a class="reference internal" href="#id8">3-D</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#switching-devices-cuda-cpu-or-cuda-cpu">Switching devices: cuda&gt;cpu or cuda&lt;cpu</a></li>
+<li><a class="reference internal" href="#backend">Backend</a><ul>
+<li><a class="reference internal" href="#d-backend">1-D backend</a></li>
+<li><a class="reference internal" href="#id9">2-D backend</a></li>
+<li><a class="reference internal" href="#id10">3-D backend</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#benchmark-with-previous-versions">Benchmark with previous versions</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="quickstart.html" title="previous chapter">Quick Start</a></li>
+      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="developerguide.html" title="next chapter">Information for developers</a></li>
   </ul></li>
 </ul>
 </div>

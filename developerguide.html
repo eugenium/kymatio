@@ -15,6 +15,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="User Guide" href="userguide.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,6 +33,32 @@
   <div class="section" id="information-for-developers">
 <h1>Information for developers<a class="headerlink" href="#information-for-developers" title="Permalink to this headline">¶</a></h1>
 <p>Something something how the code works</p>
+<div class="section" id="backend-core-of-the-algorithm">
+<h2>Backend: core of the algorithm<a class="headerlink" href="#backend-core-of-the-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>Common to the 1-2-3-D routines of the Scattering Transform, four low-level functions
+must be optimized:</p>
+<ol class="arabic simple">
+<li>FFT/iFFT</li>
+<li>SubsamplingFourier</li>
+<li>Modulus</li>
+<li>Dotwise complex multiplication</li>
+</ol>
+</div>
+<div class="section" id="unit-tests">
+<h2>Unit tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>For running all the unit tests and avoiding bugs, please simply run from the
+main folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">each</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">scatteringfolder</span>
+    <span class="k">for</span> <span class="n">each</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">folder</span>
+        <span class="n">pytest</span> <span class="n">x</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>If all the tests pass, then you might be able to submit your Pull Request as explained
+in the next section!</p>
+</div>
+<div class="section" id="proposing-a-pull-request-pr">
+<h2>Proposing a Pull Request(PR)<a class="headerlink" href="#proposing-a-pull-request-pr" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -39,10 +66,21 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Information for developers</a><ul>
+<li><a class="reference internal" href="#backend-core-of-the-algorithm">Backend: core of the algorithm</a></li>
+<li><a class="reference internal" href="#unit-tests">Unit tests</a></li>
+<li><a class="reference internal" href="#proposing-a-pull-request-pr">Proposing a Pull Request(PR)</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="userguide.html" title="previous chapter">User Guide</a></li>
   </ul></li>
 </ul>
 </div>

@@ -15,7 +15,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="User Guide" href="userguide.html" />
+    <link rel="next" title="Installation" href="installation.html" />
     <link rel="prev" title="Scattering" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -33,11 +33,40 @@
             
   <div class="section" id="quick-start">
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
-<p>Do <cite>pip install scattering</cite></p>
-<p>Then</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
-from scattering import Scattering1D</p>
-<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>For Linux or MacOS, in bash, do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">scattering</span>
+</pre></div>
+</div>
+<p>Then in a python shell:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scattering</span>
+</pre></div>
+</div>
+<p>If the package has been correctly installed, this last command should run.</p>
+<div class="section" id="specific">
+<h2>Specific<a class="headerlink" href="#specific" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="d-signals">
+<h3>1-d signals<a class="headerlink" href="#d-signals" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id1">
+<h3>2-d signals<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Let us visualize the output after a Scattering Transform:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">scattering</span> <span class="k">import</span> <span class="n">Scattering2D</span>
+<span class="n">scattering</span> <span class="o">=</span> <span class="n">Scattering2D</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+<span class="n">Sx</span> <span class="o">=</span> <span class="n">scattering</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Sx</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>3-d signals<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="to-go-further">
+<h2>To go further<a class="headerlink" href="#to-go-further" title="Permalink to this headline">¶</a></h2>
+<p>Simply check the folder BLAH</p>
+</div>
 </div>
 
 
@@ -45,12 +74,26 @@ from scattering import Scattering1D</p>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Quick Start</a><ul>
+<li><a class="reference internal" href="#specific">Specific</a><ul>
+<li><a class="reference internal" href="#d-signals">1-d signals</a></li>
+<li><a class="reference internal" href="#id1">2-d signals</a></li>
+<li><a class="reference internal" href="#id2">3-d signals</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#to-go-further">To go further</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="index.html" title="previous chapter">Scattering</a></li>
-      <li>Next: <a href="userguide.html" title="next chapter">User Guide</a></li>
+      <li>Next: <a href="installation.html" title="next chapter">Installation</a></li>
   </ul></li>
 </ul>
 </div>

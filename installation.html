@@ -15,6 +15,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Guide" href="userguide.html" />
+    <link rel="prev" title="Quick Start" href="quickstart.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -31,18 +33,35 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>For installing the software, we propose two solutions: via pip or from the sources.</p>
 <div class="section" id="recommended">
 <h2>Recommended<a class="headerlink" href="#recommended" title="Permalink to this headline">¶</a></h2>
-<p><cite>pip install scattering_transform</cite></p>
+<p>In your bash, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">scattering_transform</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="from-source">
 <h2>From source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h2>
-<p><cite>git clone https://github.com/scattering_transform/scattering_transform</cite>
-<cite>(cd scattering_transform &amp;&amp; python setup.py install)</cite></p>
+<p>If you desire to use the latest version of the code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">scattering_transform</span><span class="o">/</span><span class="n">scattering_transform</span>
+<span class="n">cd</span> <span class="n">scattering_transform</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="optimizing-gpu-acceleration">
+<h2>Optimizing GPU acceleration<a class="headerlink" href="#optimizing-gpu-acceleration" title="Permalink to this headline">¶</a></h2>
+<p>In order to benefit from cuda optimization, you can also install skcuda and cupy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cupy</span> <span class="n">skcuda</span>
+</pre></div>
+</div>
+<p>and then refer to <a class="reference internal" href="userguide.html#backend-story"><span class="std std-ref">Backend</span></a> for more details about the use of our optimized cuda kernels.</p>
 </div>
 <div class="section" id="developer">
 <h2>Developer<a class="headerlink" href="#developer" title="Permalink to this headline">¶</a></h2>
-<p>Use <cite>python setup.py develop</cite></p>
+<p>??????????????????????????????Use <cite>python setup.py develop</cite>????????????????????</p>
 </div>
 </div>
 
@@ -57,6 +76,7 @@
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#recommended">Recommended</a></li>
 <li><a class="reference internal" href="#from-source">From source</a></li>
+<li><a class="reference internal" href="#optimizing-gpu-acceleration">Optimizing GPU acceleration</a></li>
 <li><a class="reference internal" href="#developer">Developer</a></li>
 </ul>
 </li>
@@ -65,6 +85,8 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="quickstart.html" title="previous chapter">Quick Start</a></li>
+      <li>Next: <a href="userguide.html" title="next chapter">User Guide</a></li>
   </ul></li>
 </ul>
 </div>
