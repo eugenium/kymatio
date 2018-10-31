@@ -9,6 +9,7 @@
     <title>Information for developers &#8212; scattering  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
@@ -28,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="information-for-developers">
@@ -40,42 +43,63 @@ must be optimized:</p>
 <ol class="arabic simple">
 <li>FFT/iFFT</li>
 <li>SubsamplingFourier</li>
-<li>Modulus</li>
+<li>Non-linearity (e.g. modulus for 1-2D)</li>
 <li>Dotwise complex multiplication</li>
+<li>Padding/unpadding</li>
 </ol>
 </div>
 <div class="section" id="unit-tests">
 <h2>Unit tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
 <p>For running all the unit tests and avoiding bugs, please simply run from the
 main folder:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">each</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">scatteringfolder</span>
-    <span class="k">for</span> <span class="n">each</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">folder</span>
-        <span class="n">pytest</span> <span class="n">x</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span>
 </pre></div>
 </div>
 <p>If all the tests pass, then you might be able to submit your Pull Request as explained
 in the next section!</p>
 </div>
+<div class="section" id="checking-speed">
+<h2>Checking speed<a class="headerlink" href="#checking-speed" title="Permalink to this headline">¶</a></h2>
+<p>Please check <cite>examples/.d/compute_speed.py</cite> to benchmark your modification of backend.</p>
+</div>
 <div class="section" id="proposing-a-pull-request-pr">
 <h2>Proposing a Pull Request(PR)<a class="headerlink" href="#proposing-a-pull-request-pr" title="Permalink to this headline">¶</a></h2>
+<p>Each PR must be documented using docstings, illustrated with an example and must run the
+unit tests.</p>
 </div>
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Information for developers</a><ul>
-<li><a class="reference internal" href="#backend-core-of-the-algorithm">Backend: core of the algorithm</a></li>
-<li><a class="reference internal" href="#unit-tests">Unit tests</a></li>
-<li><a class="reference internal" href="#proposing-a-pull-request-pr">Proposing a Pull Request(PR)</a></li>
+<h1 class="logo"><a href="index.html">scattering</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Information for developers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#backend-core-of-the-algorithm">Backend: core of the algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unit-tests">Unit tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#checking-speed">Checking speed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#proposing-a-pull-request-pr">Proposing a Pull Request(PR)</a></li>
 </ul>
 </li>
 </ul>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -84,13 +108,6 @@ in the next section!</p>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/developerguide.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -111,8 +128,8 @@ in the next section!</p>
       &copy;2018, The Scattering Developers.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/developerguide.rst.txt"

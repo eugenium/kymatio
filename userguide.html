@@ -9,6 +9,7 @@
     <title>User Guide &#8212; scattering  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
@@ -29,28 +30,35 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="user-guide">
-<h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction-to-scattering-transform">
 <h2>Introduction to scattering transform<a class="headerlink" href="#introduction-to-scattering-transform" title="Permalink to this headline">¶</a></h2>
-<p>A scattering transform is a non-linear operator that builds
+<p>A Scattering Transform is a non-linear operator that builds
 invariant with respect to euclidean geometric transformations such as translations
 rotations or change of scale.</p>
 <p>A Scattering Network is a complex valued Convolutional Neural Network using predefined
-wavelets filters and the complex modulus as nonlinearity.  A wavelet transform
-propagates asignal throuh each layer, in order to separate structures at different
+wavelets filters and the complex modulus as non-linearity.  A wavelet transform
+propagates a signal throuh each layer, in order to separate structures at different
 scales.  Each operator ofthe cascade is non expansive, and so is the cascade.  Thus
 higher order layers do not sufferfrom high variance.  In other words, this
-representation has mathematical foundations thatmakes  it  amenable  for  mainstream
-statistical  use  on  structured  signals  such  as  naturalimages, textures, audio
-sounds or mollecules.</p>
-<p>Let us consider a set of wavelets <span class="math">\{\psi_\lambda\}_\lambda</span> adjusted such that
-there exists <span class="math">\epsilon_0</span> satisfying:</p>
+representation has mathematical foundations that makes  it  amenable  as a  mainstream
+representation  on  structured  signals  such  as  natural images, textures, audio
+sounds or molecules.</p>
+<p>Let us consider a set of wavelets <img class="math" src="_images/math/60cc670ea773ae19ff9ca03cd6a39f101b550183.png" alt="\{\psi_\lambda\}_\lambda"/> adjusted such that
+there exists <img class="math" src="_images/math/f6da37ff3a3873900e235d0837af9e1d2a30c2ab.png" alt="\epsilon_0"/> satisfying:</p>
 <div class="math">
-<p><span class="math">1-\epsilon_0 \leq \sum_\lambda |\hat \psi_\lambda(\omega)|^2 \leq 1</span></p>
-</div></div>
+<p><img src="_images/math/7ea99ebeecefbc13a95e75e743b94fee74cfc67d.png" alt="1-\epsilon_0 \leq \sum_\lambda |\hat \psi_\lambda(\omega)|^2 \leq 1"/></p>
+</div><p>For a fixed <img class="math" src="_images/math/0b7c1e16a3a8a849bb8ffdcdbf86f65fd1f30438.png" alt="k"/> and a family of <img class="math" src="_images/math/9cdf0c26b6d787c418bb4cd3155561132b380dee.png" alt="(\lambda_1,...,\lambda_k)"/>, a Scattering
+coefficient <img class="math" src="_images/math/545a3138e5578d066379f5df5e8941cddc17c6fb.png" alt="S[\lambda_1,...,\lambda_k]"/> of order <img class="math" src="_images/math/0b7c1e16a3a8a849bb8ffdcdbf86f65fd1f30438.png" alt="k"/> is such that:</p>
+<div class="math">
+<p><img src="_images/math/3892d8dd859047f5b2056107a262512193d44086.png" alt="S[\lambda_1,...,\lambda_k] = |\psi_{\lambda_k} \star ...| \psi_{\lambda_1} \star x|...|"/></p>
+</div><p>See <a class="reference internal" href="#mallat2012group" id="id2">[Mal12]</a> for deeper mathematical insights on the Scattering Transform.</p>
+</div>
 <div class="section" id="practical-implementation">
 <h2>Practical implementation<a class="headerlink" href="#practical-implementation" title="Permalink to this headline">¶</a></h2>
 <p>Former implementation of the Scattering Transform computed each Scattering coefficients
@@ -62,40 +70,42 @@ REFERENE_FIGURE.</p>
 <div class="section" id="d">
 <h3>1-D<a class="headerlink" href="#d" title="Permalink to this headline">¶</a></h3>
 </div>
-<div class="section" id="id1">
-<h3>2-D<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id2">
-<h3>3-D<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id3">
-<h3>1-D<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id4">
-<h3>2-D<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<h3>2-D<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>The 2D implementation in this package  provided  outputs coefficients which
+matches exactly the one described in <a class="reference internal" href="#anden2014scatnet" id="id4">[AndenSM+14]</a>.</p>
 </div>
 <div class="section" id="id5">
 <h3>3-D<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
-<div class="section" id="output-size">
-<h2>Output size<a class="headerlink" href="#output-size" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id6">
 <h3>1-D<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="id7">
 <h3>2-D<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
-<p>Let us assume that <span class="math">x</span> is a tensor of size <span class="math">(B,C,N_1,N_2)</span>. Then, if the
-output <span class="math">Sx</span> via a Scattering Transform with scale <span class="math">J</span> and <span class="math">L</span> angles will have
-size:</p>
-<div class="math">
-<p><span class="math">(B,C,1+LJ+\frac{L^2J(J-1)}{2},\frac{N_1}{2^J},\frac{N_2}{2^J})</span></p>
-</div></div>
+</div>
 <div class="section" id="id8">
 <h3>3-D<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="output-size">
+<h2>Output size<a class="headerlink" href="#output-size" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id9">
+<h3>1-D<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id10">
+<h3>2-D<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>Let us assume that <img class="math" src="_images/math/a59f68a4202623bb859a7093f0316bf466e6f75d.png" alt="x"/> is a tensor of size <img class="math" src="_images/math/674895174f438ddc4eea926c4293cf857e8ba2c1.png" alt="(B,C,N_1,N_2)"/>. Then, if the
+output <img class="math" src="_images/math/ea5ff52ba3b9b8063bb31d1b44fd226ff675b8dd.png" alt="Sx"/> via a Scattering Transform with scale <img class="math" src="_images/math/ca54d3a4a8a221da5f7a13a28ec6a45b4abcc5a5.png" alt="J"/> and <img class="math" src="_images/math/ae2b750f71e1fc0daaa3de9a85d42794d7cd1326.png" alt="L"/> angles will have
+size:</p>
+<div class="math">
+<p><img src="_images/math/1dfd180f2801f161f1c8f0447f802ae024d17de9.png" alt="(B,C,1+LJ+\frac{L^2J(J-1)}{2},\frac{N_1}{2^J},\frac{N_2}{2^J})"/></p>
+</div></div>
+<div class="section" id="id11">
+<h3>3-D<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 <div class="section" id="switching-devices-cuda-cpu-or-cuda-cpu">
@@ -138,8 +148,8 @@ signal type as we will see below.</p>
 <div class="section" id="d-backend">
 <h3>1-D backend<a class="headerlink" href="#d-backend" title="Permalink to this headline">¶</a></h3>
 </div>
-<div class="section" id="id9">
-<h3>2-D backend<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id12">
+<h3>2-D backend<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <p>If the global environment variable <cite>SCATTERING_BACKEND_2D</cite> is not equal to <cite>None</cite>, then
 its value will be used at running time as the backend. Currently, two backends exist:</p>
 <ul class="simple">
@@ -147,54 +157,147 @@ its value will be used at running time as the backend. Currently, two backends e
 <li><cite>skcuda</cite>: the scattering is not differentiable but is optimized to deliver fast computations.</li>
 </ul>
 </div>
-<div class="section" id="id10">
-<h3>3-D backend<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h3>3-D backend<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 <div class="section" id="benchmark-with-previous-versions">
 <h2>Benchmark with previous versions<a class="headerlink" href="#benchmark-with-previous-versions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id14">
+<h3>1-D backend<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id15">
+<h3>2-D backend<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>We compared our implementation with MATLAB version <a class="reference internal" href="#oyallon-2015-cvpr" id="id16">[OM15]</a> and <em>PyScatWave</em> former
+PyTorch implementation <a class="reference internal" href="#id21" id="id17">[OZH+18]</a>. The following table correspond to the average compute time
+for a batch of size <img class="math" src="_images/math/0665da744cafdd5876bbf882a434cc37a96beccd.png" alt="128\times 3 \times 256 \times 256"/>, for a forward pass:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="59%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Average time(s) per batch</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MATLAB <a class="reference internal" href="#oyallon-2015-cvpr" id="id18">[OM15]</a></td>
+<td>&gt;200</td>
+</tr>
+<tr class="row-odd"><td>Kymatio (torch backend, CPU)</td>
+<td>110</td>
+</tr>
+<tr class="row-even"><td>Kymatio (torch backend, 1080Ti GPU)</td>
+<td>4.4</td>
+</tr>
+<tr class="row-odd"><td>Kymatio (torch backend, V100 GPU)</td>
+<td>2.9</td>
+</tr>
+<tr class="row-even"><td>PyScatWave <a class="reference internal" href="#id21" id="id19">[OZH+18]</a></td>
+<td>1.6</td>
+</tr>
+<tr class="row-odd"><td>Kymatio (skcuda backend, 1080Ti GPU)</td>
+<td>1.1</td>
+</tr>
+<tr class="row-even"><td>Kymatio (skcuda backend, V100 GPU)</td>
+<td>0.49</td>
+</tr>
+</tbody>
+</table>
+<p>The CPU tests were performed on a 48-core machine.</p>
+</div>
+<div class="section" id="id20">
+<h3>3-D backend<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<p class="rubric">References</p>
+<p id="bibtex-bibliography-userguide-0"><table class="docutils citation" frame="void" id="anden2014scatnet" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[AndenSM+14]</a></td><td>J&nbsp;Andén, L&nbsp;Sifre, S&nbsp;Mallat, M&nbsp;Kapoko, V&nbsp;Lostanlen, and E&nbsp;Oyallon. Scatnet. <em>Computer Software. Available: http://www. di. ens. fr/data/software/scatnet</em>, 2014.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mallat2012group" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[Mal12]</a></td><td>Stéphane Mallat. Group invariant scattering. <em>Communications on Pure and Applied Mathematics</em>, 65(10):1331–1398, 2012.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="id21" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[OZH+18]</td><td><em>(<a class="fn-backref" href="#id17">1</a>, <a class="fn-backref" href="#id19">2</a>)</em> E.&nbsp;Oyallon, S.&nbsp;Zagoruyko, G.&nbsp;Huang, N.&nbsp;Komodakis, S.&nbsp;Lacoste-Julien, M.&nbsp;B. Blaschko, and E.&nbsp;Belilovsky. Scattering networks for hybrid representation learning. <em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>, ():1–1, 2018. <a class="reference external" href="https://doi.org/10.1109/TPAMI.2018.2855738">doi:10.1109/TPAMI.2018.2855738</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="oyallon-2015-cvpr" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[OM15]</td><td><em>(<a class="fn-backref" href="#id16">1</a>, <a class="fn-backref" href="#id18">2</a>)</em> Edouard Oyallon and Stephane Mallat. Deep roto-translation scattering for object classification. In <em>The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</em>. June 2015.</td></tr>
+</tbody>
+</table>
+</p>
+</div>
 </div>
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">User Guide</a><ul>
-<li><a class="reference internal" href="#introduction-to-scattering-transform">Introduction to scattering transform</a></li>
-<li><a class="reference internal" href="#practical-implementation">Practical implementation</a><ul>
-<li><a class="reference internal" href="#d">1-D</a></li>
-<li><a class="reference internal" href="#id1">2-D</a></li>
-<li><a class="reference internal" href="#id2">3-D</a></li>
+<h1 class="logo"><a href="index.html">scattering</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction-to-scattering-transform">Introduction to scattering transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#practical-implementation">Practical implementation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#d">1-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">2-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">3-D</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples">Examples</a><ul>
-<li><a class="reference internal" href="#id3">1-D</a></li>
-<li><a class="reference internal" href="#id4">2-D</a></li>
-<li><a class="reference internal" href="#id5">3-D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">1-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">2-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">3-D</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#output-size">Output size</a><ul>
-<li><a class="reference internal" href="#id6">1-D</a></li>
-<li><a class="reference internal" href="#id7">2-D</a></li>
-<li><a class="reference internal" href="#id8">3-D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-size">Output size</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id9">1-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">2-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">3-D</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#switching-devices-cuda-cpu-or-cuda-cpu">Switching devices: cuda&gt;cpu or cuda&lt;cpu</a></li>
-<li><a class="reference internal" href="#backend">Backend</a><ul>
-<li><a class="reference internal" href="#d-backend">1-D backend</a></li>
-<li><a class="reference internal" href="#id9">2-D backend</a></li>
-<li><a class="reference internal" href="#id10">3-D backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#switching-devices-cuda-cpu-or-cuda-cpu">Switching devices: cuda&gt;cpu or cuda&lt;cpu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#backend">Backend</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#d-backend">1-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">2-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id13">3-D backend</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#benchmark-with-previous-versions">Benchmark with previous versions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#benchmark-with-previous-versions">Benchmark with previous versions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id14">1-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">2-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id20">3-D backend</a></li>
 </ul>
 </li>
 </ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a></li>
+</ul>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -204,13 +307,6 @@ its value will be used at running time as the backend. Currently, two backends e
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/userguide.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -231,8 +327,8 @@ its value will be used at running time as the backend. Currently, two backends e
       &copy;2018, The Scattering Developers.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/userguide.rst.txt"

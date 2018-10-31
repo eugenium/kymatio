@@ -1,0 +1,568 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>&lt;no title&gt; &#8212; scattering  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-gallery-1d-classif-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<p class="sphx-glr-example-title" id="sphx-glr-gallery-1d-classif-py">Self-contained classification example on the free-spoken digit data recordings
+This dataset is automatically downloaded and preprocessed from
+<a class="reference external" href="https://github.com/Jakobovski/free-spoken-digit-dataset.git">https://github.com/Jakobovski/free-spoken-digit-dataset.git</a></p>
+<p>Downloading and precomputing scattering coefficients should take about 5 mns.
+Running the gradient descent takes about 1 mn.</p>
+<p>Results:
+Training accuracy = 99.6%
+Testing accuracy = 95.3%</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">Linear</span><span class="p">,</span> <span class="n">NLLLoss</span><span class="p">,</span> <span class="n">LogSoftmax</span><span class="p">,</span> <span class="n">Sequential</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Adam</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">scattering</span> <span class="kn">import</span> <span class="n">Scattering1D</span>
+<span class="kn">from</span> <span class="nn">scattering.datasets</span> <span class="kn">import</span> <span class="n">fetch_fsdd</span>
+<span class="kn">from</span> <span class="nn">scattering.caching</span> <span class="kn">import</span> <span class="n">get_cache_dir</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">wavfile</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+
+<span class="k">def</span> <span class="nf">loadfile</span><span class="p">(</span><span class="n">path_file</span><span class="p">):</span>
+    <span class="n">sr</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">wavfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path_file</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+    <span class="c1"># make it mono</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">smallest_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">smallest_axis</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">sr</span><span class="p">,</span> <span class="n">x</span>
+
+
+<span class="k">def</span> <span class="nf">get_fsdd_scattering_coefs</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">force_compute</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                              <span class="n">cache_name</span><span class="o">=</span><span class="s1">&#39;fsdd&#39;</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                              <span class="n">log_transform</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">log_eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+                              <span class="n">average_time</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads, preprocesses and caches the scattering coefficients of the</span>
+<span class="sd">    Free Spoken Digit Dataset</span>
+
+<span class="sd">    This function is the main entrance function to access the fsdd dataset</span>
+<span class="sd">    in an automated fashion.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    T: int &gt; 0</span>
+<span class="sd">        Support of the signals to use (otherwise, signals will be cut or</span>
+<span class="sd">        padded to achieve this value)</span>
+<span class="sd">    J: int &gt; 0</span>
+<span class="sd">        Scale parameter for the scattering transform</span>
+<span class="sd">    Q: int &gt; 0</span>
+<span class="sd">        Quality factor for the scattering filterbank.</span>
+<span class="sd">    use_cuda: boolean, optional</span>
+<span class="sd">        Allows to use cuda to speed up operations. Defaults to True</span>
+<span class="sd">    force_compute: boolean, optional</span>
+<span class="sd">        Whether to force to recompute scattering vectors, even if existing.</span>
+<span class="sd">        Defaults to False.</span>
+<span class="sd">    cache_name: string, optional</span>
+<span class="sd">        Name of the caching directory for this file. Defaults to &quot;fsdd&quot;</span>
+<span class="sd">    is_train: boolean, optional</span>
+<span class="sd">        Whether to provide files related to the training or testing set.</span>
+<span class="sd">        Defaults to True</span>
+<span class="sd">    log_transform: boolean, optional</span>
+<span class="sd">        Whether to take the logarithm of the scattering coefficients, which</span>
+<span class="sd">        should be more equally distributed. This removes the zero-order</span>
+<span class="sd">        coefficients (averages). Defaults to True.</span>
+<span class="sd">    log_eps: float &gt; 0</span>
+<span class="sd">        Constant to add to the absolute value of the scattering coefficients</span>
+<span class="sd">        before computing the logarithm. Defaults to 1e-6.</span>
+<span class="sd">    average_time: boolean, optional</span>
+<span class="sd">        Whether to take the average of the scatterings along time, to reduce</span>
+<span class="sd">        the dimensionality of the problem. Defaults to True</span>
+<span class="sd">    verbose: boolean, optional</span>
+<span class="sd">        Whether to display information about what is performed.</span>
+<span class="sd">        Defaults to True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x: torch FloatTensor with 2 axis</span>
+<span class="sd">        The input vectors (lines are samples, columns features)</span>
+<span class="sd">        The inputs are processed according to the log and averaging operations,</span>
+<span class="sd">        if necessary.</span>
+<span class="sd">    y: torch LongTensor with 1 axis</span>
+<span class="sd">        The output classes (integers from 0 to 9)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the aggregated file in the adequate folder</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">get_agg_scattering_coefs</span><span class="p">(</span>
+        <span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="n">use_cuda</span><span class="p">,</span> <span class="n">force_compute</span><span class="o">=</span><span class="n">force_compute</span><span class="p">,</span>
+        <span class="n">cache_name</span><span class="o">=</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="n">is_train</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log_transform</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="c1"># remove order 0</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_eps</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">average_time</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+
+
+<span class="k">def</span> <span class="nf">get_agg_scattering_coefs</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">force_compute</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                             <span class="n">cache_name</span><span class="o">=</span><span class="s1">&#39;fsdd&#39;</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                             <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Help function for get_fsdd_dataset.</span>
+<span class="sd">    Computes and caches the aggregated dataset for train and test (aggregated</span>
+<span class="sd">    along all files, which is possible since the dataset is very small).</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    T: int &gt; 0</span>
+<span class="sd">        Support of the signals to use (otherwise, signals will be cut or</span>
+<span class="sd">        padded to achieve this value)</span>
+<span class="sd">    J: int &gt; 0</span>
+<span class="sd">        Scale parameter for the scattering transform</span>
+<span class="sd">    Q: int &gt; 0</span>
+<span class="sd">        Quality factor for the scattering filterbank.</span>
+<span class="sd">    use_cuda: boolean, optional</span>
+<span class="sd">        Allows to use cuda to speed up operations. Defaults to True</span>
+<span class="sd">    force_compute: boolean, optional</span>
+<span class="sd">        Whether to force to recompute scattering vectors, even if existing.</span>
+<span class="sd">        Defaults to False.</span>
+<span class="sd">    cache_name: string, optional</span>
+<span class="sd">        Name of the caching directory for this file. Defaults to &quot;fsdd&quot;</span>
+<span class="sd">    is_train: boolean, optional</span>
+<span class="sd">        Whether to provide files related to the training or testing set.</span>
+<span class="sd">        Defaults to True</span>
+<span class="sd">    verbose: boolean, optional</span>
+<span class="sd">        Whether to display information about what is performed.</span>
+<span class="sd">        Defaults to True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x: torch FloatTensor with 2 axis</span>
+<span class="sd">        The input vectors (lines are samples, columns features), un-processed.</span>
+<span class="sd">    y: torch LongTensor with 1 axis</span>
+<span class="sd">        The output classes (integers from 0 to 9)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the aggregated files for train or test already exist</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;train&#39;</span> <span class="k">if</span> <span class="n">is_train</span> <span class="k">else</span> <span class="s1">&#39;test&#39;</span>
+    <span class="n">path_data</span> <span class="o">=</span> <span class="n">get_cache_dir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_name</span><span class="p">,</span> <span class="s1">&#39;scattering&#39;</span><span class="p">))</span>
+    <span class="n">input_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_data</span><span class="p">,</span> <span class="s1">&#39;input_&#39;</span> <span class="o">+</span> <span class="n">suffix</span> <span class="o">+</span> <span class="s1">&#39;.th&#39;</span><span class="p">)</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_data</span><span class="p">,</span> <span class="s1">&#39;output_&#39;</span> <span class="o">+</span> <span class="n">suffix</span> <span class="o">+</span> <span class="s1">&#39;.th&#39;</span><span class="p">)</span>
+    <span class="n">exists_input</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
+    <span class="n">exists_output</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">exists_input</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="n">exists_output</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force_compute</span><span class="p">:</span>
+        <span class="c1"># get the list of all the scattering coefficients</span>
+        <span class="c1"># (they may be recomputed along the way if necessary</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">get_detail_scattering_coefs</span><span class="p">(</span>
+            <span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="n">use_cuda</span><span class="p">,</span> <span class="n">force_compute</span><span class="o">=</span><span class="n">force_compute</span><span class="p">,</span>
+            <span class="n">cache_name</span><span class="o">=</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="n">is_train</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Aggregating individual scattering vectors for&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+        <span class="c1"># Aggregate the files</span>
+        <span class="n">path_dataset</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_data</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+        <span class="n">s_acc</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">y_acc</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dataset</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">label</span><span class="p">])</span>
+            <span class="n">s_acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">y_acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">s_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">s_acc</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">y_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">y_acc</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="c1"># save them</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">s_acc</span><span class="p">,</span> <span class="n">input_path</span><span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">y_acc</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">s_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
+        <span class="n">y_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+    <span class="c1"># return the result</span>
+    <span class="k">return</span> <span class="n">s_acc</span><span class="p">,</span> <span class="n">y_acc</span>
+
+
+<span class="k">def</span> <span class="nf">get_detail_scattering_coefs</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                <span class="n">force_compute</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                <span class="n">cache_name</span><span class="o">=</span><span class="s1">&#39;fsdd&#39;</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the list of all the class_name_idex.th files for the train/test class</span>
+<span class="sd">    If the folder cache_name/scattering/train or test does not exist or</span>
+<span class="sd">    if force_compute is True, all the scattering coefficients are recomputed</span>
+<span class="sd">    along the way (both for train and test)</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    T: int &gt; 0</span>
+<span class="sd">        Support of the signals to use (otherwise, signals will be cut or</span>
+<span class="sd">        padded to achieve this value)</span>
+<span class="sd">    J: int &gt; 0</span>
+<span class="sd">        Scale parameter for the scattering transform</span>
+<span class="sd">    Q: int &gt; 0</span>
+<span class="sd">        Quality factor for the scattering filterbank.</span>
+<span class="sd">    use_cuda: boolean, optional</span>
+<span class="sd">        Allows to use cuda to speed up operations. Defaults to True</span>
+<span class="sd">    force_compute: boolean, optional</span>
+<span class="sd">        Whether to force to recompute scattering vectors, even if existing.</span>
+<span class="sd">        Defaults to False.</span>
+<span class="sd">    cache_name: string, optional</span>
+<span class="sd">        Name of the caching directory for this file. Defaults to &quot;fsdd&quot;</span>
+<span class="sd">    is_train: boolean, optional</span>
+<span class="sd">        Whether to provide files related to the training or testing set.</span>
+<span class="sd">        Defaults to True</span>
+<span class="sd">    verbose: boolean, optional</span>
+<span class="sd">        Whether to display information about what is performed.</span>
+<span class="sd">        Defaults to True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list_train (or list_test): list</span>
+<span class="sd">        The list of the files present in the correct caching directory to</span>
+<span class="sd">        look after when performing the aggregation. Files are sorted to</span>
+<span class="sd">        ensure reproducibility.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;train&#39;</span> <span class="k">if</span> <span class="n">is_train</span> <span class="k">else</span> <span class="s1">&#39;test&#39;</span>
+    <span class="n">path_dataset</span> <span class="o">=</span> <span class="n">get_cache_dir</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_name</span><span class="p">,</span> <span class="s1">&#39;scattering&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">))</span>
+    <span class="n">list_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path_dataset</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.th&#39;</span><span class="p">)])</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span><span class="p">(</span><span class="n">force_compute</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">list_files</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># we recompute all scattering coefficients</span>
+        <span class="n">list_train</span><span class="p">,</span> <span class="n">list_test</span> <span class="o">=</span> <span class="n">compute_scattering_coefs</span><span class="p">(</span>
+            <span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="n">use_cuda</span><span class="p">,</span> <span class="n">cache_name</span><span class="o">=</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">list_train</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">list_test</span>
+
+
+<span class="k">def</span> <span class="nf">compute_scattering_coefs</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cache_name</span><span class="o">=</span><span class="s1">&#39;fsdd&#39;</span><span class="p">,</span>
+                             <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the list of individual computed scattering coefficients, both for train</span>
+<span class="sd">    and test.</span>
+<span class="sd">    If not existing, computes and caches them.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    T: int &gt; 0</span>
+<span class="sd">        Support of the signals to use (otherwise, signals will be cut or</span>
+<span class="sd">        padded to achieve this value)</span>
+<span class="sd">    J: int &gt; 0</span>
+<span class="sd">        Scale parameter for the scattering transform</span>
+<span class="sd">    Q: int &gt; 0</span>
+<span class="sd">        Quality factor for the scattering filterbank.</span>
+<span class="sd">    use_cuda: boolean, optional</span>
+<span class="sd">        Allows to use cuda to speed up operations. Defaults to True</span>
+<span class="sd">    cache_name: string, optional</span>
+<span class="sd">        Name of the caching directory for this file. Defaults to &quot;fsdd&quot;</span>
+<span class="sd">    verbose: boolean, optional</span>
+<span class="sd">        Whether to display information about what is performed.</span>
+<span class="sd">        Defaults to True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list_train, list_test:</span>
+<span class="sd">        The list of the files present in the correct caching directory to</span>
+<span class="sd">        look after when performing the aggregation. Files are sorted to</span>
+<span class="sd">        ensure reproducibility.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 1) Download the dataset (if not existing)</span>
+    <span class="n">info_data</span> <span class="o">=</span> <span class="n">fetch_fsdd</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">info_data</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">])</span>
+    <span class="n">path_data</span> <span class="o">=</span> <span class="n">info_data</span><span class="p">[</span><span class="s1">&#39;path_dataset&#39;</span><span class="p">]</span>
+    <span class="c1"># 2) Preprocess with the scattering</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Computing scattering coefficients&quot;</span><span class="p">)</span>
+    <span class="n">scattering</span> <span class="o">=</span> <span class="n">Scattering1D</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+        <span class="n">scattering</span> <span class="o">=</span> <span class="n">scattering</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="c1"># build the caching directory</span>
+    <span class="n">path_temp</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">suffix</span><span class="p">:</span> <span class="n">get_cache_dir</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_name</span><span class="p">,</span> <span class="s1">&#39;scattering&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">]}</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">count</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;{}/{} - Time elapsed: {:0.2f}s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">),</span>
+              <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># load the file</span>
+        <span class="n">rate</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">loadfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_data</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="n">T</span><span class="p">:</span>
+            <span class="c1"># pad it with zeros:</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="n">T</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">x_padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+            <span class="n">left_pad</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">x_padded</span><span class="p">[</span><span class="n">left_pad</span><span class="p">:</span><span class="n">left_pad</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x_padded</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="c1"># compute the scattering</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">scattering</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s_acc</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># split it</span>
+            <span class="n">num_chunks</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">T</span><span class="p">)</span>  <span class="c1"># negative integer divison for ceil</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_chunks</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">num_chunks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="n">T</span><span class="p">:])</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">T</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">T</span><span class="p">])</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">scattering</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+                <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="n">s_acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="c1"># average them</span>
+            <span class="n">s_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">s_acc</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s_acc</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># store it in the adequate folder</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">is_train</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">5</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;train&#39;</span> <span class="k">if</span> <span class="n">is_train</span> <span class="k">else</span> <span class="s1">&#39;test&#39;</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_temp</span><span class="p">[</span><span class="n">suffix</span><span class="p">],</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.th&#39;</span><span class="p">))</span>
+    <span class="c1"># list all the files in train and test</span>
+    <span class="n">files_train</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path_temp</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.th&#39;</span><span class="p">)])</span>
+    <span class="n">files_test</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path_temp</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.th&#39;</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">files_train</span><span class="p">,</span> <span class="n">files_test</span>
+
+
+<span class="k">def</span> <span class="nf">compute_loss_and_accuracy</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the loss and accuracy of the model net with the given</span>
+<span class="sd">    criterion for the dataset (x, y)</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    net: torch Module</span>
+<span class="sd">    criterion: torch loss function</span>
+<span class="sd">    x: input Tensor (variable)</span>
+<span class="sd">    y: expected output tensor (variable)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    avg_loss: float</span>
+<span class="sd">        average loss across the dataset</span>
+<span class="sd">    accuracy: float</span>
+<span class="sd">        average accuracy across the dataset, that is:</span>
+<span class="sd">        average number of samples for which the network assigns the</span>
+<span class="sd">        maximal probability for the correct class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_losses</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_successes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">all_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># find the argmax of resp</span>
+        <span class="n">sub_resp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">sub_resp</span><span class="p">)</span> <span class="o">==</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">all_successes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">success</span><span class="p">)</span>
+    <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">all_losses</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">all_successes</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">avg_loss</span><span class="p">,</span> <span class="n">accuracy</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">13</span>  <span class="c1"># support size we use</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># averaging scale of the scattering</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="mi">12</span>  <span class="c1"># quality factor for the wavelet transform</span>
+    <span class="n">log_transform</span> <span class="o">=</span> <span class="bp">True</span>  <span class="c1"># use the log of the scattering</span>
+    <span class="n">log_eps</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="c1"># constant to prevent small arguments of the log</span>
+    <span class="n">average_time</span> <span class="o">=</span> <span class="bp">True</span>  <span class="c1"># average scattering along time</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>  <span class="c1"># batch_size</span>
+    <span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># number of epochs</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="mf">1e-4</span>  <span class="c1"># learning rate (ADAM)</span>
+    <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span>  <span class="c1"># random seed for reproducibility</span>
+    <span class="n">use_cuda</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>  <span class="c1"># whether to use cuda</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="bp">True</span>  <span class="c1"># print intermediate steps</span>
+    <span class="n">cache_name</span> <span class="o">=</span> <span class="s1">&#39;fsdd&#39;</span>  <span class="c1"># name of the cache folder</span>
+    <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># number of classes for the problem</span>
+    <span class="n">force_compute</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c1"># forces to recompute scattering features</span>
+    <span class="c1"># set the seed</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>  <span class="c1"># set the seed</span>
+    <span class="c1"># GETTING TRAINING FEATURES</span>
+    <span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span> <span class="o">=</span> <span class="n">get_fsdd_scattering_coefs</span><span class="p">(</span>
+        <span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="n">use_cuda</span><span class="p">,</span> <span class="n">cache_name</span><span class="o">=</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">log_eps</span><span class="o">=</span><span class="n">log_eps</span><span class="p">,</span>
+        <span class="n">average_time</span><span class="o">=</span><span class="n">average_time</span><span class="p">,</span> <span class="n">force_compute</span><span class="o">=</span><span class="n">force_compute</span><span class="p">)</span>
+    <span class="n">nsamples</span> <span class="o">=</span> <span class="n">X_tr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nbatches</span> <span class="o">=</span> <span class="n">nsamples</span> <span class="o">//</span> <span class="n">batch_size</span>
+    <span class="c1"># whiten the dataset</span>
+    <span class="n">mu_tr</span> <span class="o">=</span> <span class="n">X_tr</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">std_tr</span> <span class="o">=</span> <span class="n">X_tr</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">X_tr</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_tr</span> <span class="o">-</span> <span class="n">mu_tr</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_tr</span>
+
+    <span class="c1"># move to GPU if necessary</span>
+    <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+        <span class="n">X_tr</span> <span class="o">=</span> <span class="n">X_tr</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">y_tr</span> <span class="o">=</span> <span class="n">y_tr</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="c1"># embed them in variables</span>
+    <span class="n">X_tr</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">y_tr</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">y_tr</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c1"># DEFINE THE MODEL</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">(</span><span class="n">Linear</span><span class="p">(</span><span class="n">X_tr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">),</span> <span class="n">LogSoftmax</span><span class="p">())</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+    <span class="n">criterion</span> <span class="o">=</span> <span class="n">NLLLoss</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+    <span class="c1"># perform the gradient descent</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_epochs</span><span class="p">):</span>
+        <span class="c1"># permutation of the dataset</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">nsamples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+            <span class="n">perm</span> <span class="o">=</span> <span class="n">perm</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbatches</span><span class="p">):</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span>
+                <span class="n">X_tr</span><span class="p">[</span><span class="n">perm</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">batch_size</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">batch_size</span><span class="p">]])</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span>
+                <span class="n">resp</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">[</span><span class="n">perm</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">batch_size</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">batch_size</span><span class="p">]])</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="c1"># compute the loss and the accuracy</span>
+        <span class="n">avg_loss</span><span class="p">,</span> <span class="n">accu</span> <span class="o">=</span> <span class="n">compute_loss_and_accuracy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span>
+                                                   <span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Epoch {}, average loss = {:1.3f}, accuracy = {:1.3f}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">e</span><span class="p">,</span> <span class="n">avg_loss</span><span class="p">,</span> <span class="n">accu</span><span class="p">))</span>
+
+    <span class="c1"># Load testing features</span>
+    <span class="n">X_te</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">get_fsdd_scattering_coefs</span><span class="p">(</span>
+        <span class="n">T</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="n">use_cuda</span><span class="p">,</span> <span class="n">cache_name</span><span class="o">=</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">log_transform</span><span class="o">=</span><span class="n">log_transform</span><span class="p">,</span> <span class="n">average_time</span><span class="o">=</span><span class="n">average_time</span><span class="p">,</span>
+        <span class="n">force_compute</span><span class="o">=</span><span class="n">force_compute</span><span class="p">)</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_te</span> <span class="o">-</span> <span class="n">mu_tr</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_tr</span>
+    <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+        <span class="n">X_te</span> <span class="o">=</span> <span class="n">X_te</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">y_te</span> <span class="o">=</span> <span class="n">y_te</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">X_te</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_te</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">avg_loss</span><span class="p">,</span> <span class="n">accu</span> <span class="o">=</span> <span class="n">compute_loss_and_accuracy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">X_te</span><span class="p">,</span> <span class="n">y_te</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;TEST, average loss = {:1.3f}, accuracy = {:1.3f}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+          <span class="n">avg_loss</span><span class="p">,</span> <span class="n">accu</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-gallery-1d-classif-py">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../_downloads/classif.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">classif.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../_downloads/classif.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">classif.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">scattering</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developerguide.html">Information for developers</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, The Scattering Developers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/gallery_1d/classif.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

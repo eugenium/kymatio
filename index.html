@@ -9,6 +9,7 @@
     <title>Scattering &#8212; scattering  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
@@ -28,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="scattering">
@@ -56,35 +59,41 @@
 <li class="toctree-l2"><a class="reference internal" href="userguide.html#introduction-to-scattering-transform">Introduction to scattering transform</a></li>
 <li class="toctree-l2"><a class="reference internal" href="userguide.html#practical-implementation">Practical implementation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="userguide.html#d">1-D</a></li>
-<li class="toctree-l3"><a class="reference internal" href="userguide.html#id1">2-D</a></li>
-<li class="toctree-l3"><a class="reference internal" href="userguide.html#id2">3-D</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="userguide.html#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="userguide.html#id3">1-D</a></li>
-<li class="toctree-l3"><a class="reference internal" href="userguide.html#id4">2-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id3">2-D</a></li>
 <li class="toctree-l3"><a class="reference internal" href="userguide.html#id5">3-D</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="userguide.html#output-size">Output size</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#examples">Examples</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="userguide.html#id6">1-D</a></li>
 <li class="toctree-l3"><a class="reference internal" href="userguide.html#id7">2-D</a></li>
 <li class="toctree-l3"><a class="reference internal" href="userguide.html#id8">3-D</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#output-size">Output size</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id9">1-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id10">2-D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id11">3-D</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="userguide.html#switching-devices-cuda-cpu-or-cuda-cpu">Switching devices: cuda&gt;cpu or cuda&lt;cpu</a></li>
 <li class="toctree-l2"><a class="reference internal" href="userguide.html#backend">Backend</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="userguide.html#d-backend">1-D backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="userguide.html#id9">2-D backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="userguide.html#id10">3-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id12">2-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id13">3-D backend</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="userguide.html#benchmark-with-previous-versions">Benchmark with previous versions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#benchmark-with-previous-versions">Benchmark with previous versions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id14">1-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id15">2-D backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#id20">3-D backend</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="developerguide.html#backend-core-of-the-algorithm">Backend: core of the algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="developerguide.html#unit-tests">Unit tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developerguide.html#checking-speed">Checking speed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="developerguide.html#proposing-a-pull-request-pr">Proposing a Pull Request(PR)</a></li>
 </ul>
 </li>
@@ -94,10 +103,30 @@
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">scattering</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developerguide.html">Information for developers</a></li>
+</ul>
+
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
@@ -105,13 +134,6 @@
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -132,8 +154,8 @@
       &copy;2018, The Scattering Developers.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/index.rst.txt"
