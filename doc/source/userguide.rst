@@ -61,17 +61,7 @@ matches exactly the one described in :cite:`anden2014scatnet`.
 3-D
 ---
 
-Examples
-========
 
-1-D
----
-
-2-D
----
-
-3-D
----
 
 Output size
 ===========
