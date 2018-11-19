@@ -219,24 +219,44 @@ Benchmark with previous versions
 1-D backend
 -----------
 
+We compared our implementation with that of the ScatNet MATLAB package
+:cite:`anden2014scatnet` with similar settings. The following table shows the
+average computation time for a batch of size :math:`64 \times 1 \times 65536`:
+
+==============================================    ==========================
+Name                                              Average time per batch (s)
+==============================================    ==========================
+ScatNet :cite:`anden2014scatnet`                  1.65
+Kymatio (``torch`` backend, CPU)                  2.74
+Kymatio (``torch`` backend, Quadro M4000 GPU)     0.81
+Kymatio (``torch`` backend, V100 GPU)             0.15
+Kymatio (``skcuda`` backend, Quadro M4000 GPU)    0.66
+Kymatio (``skcuda`` backend, V100 GPU)            0.11
+==============================================    ==========================
+
+The CPU tests were performed on a 24-core machine. Further optimization of both
+the torch and skcuda backends is currently underway, so we expect these numbers
+to improve in the near future.
+
 2-D backend
 -----------
 
-We compared our implementation with MATLAB version :cite:`Oyallon_2015_CVPR` and *PyScatWave* former
-PyTorch implementation :cite:`8413168`. The following table correspond to the average compute time
-for a batch of size :math:`128\times 3 \times 256 \times 256`, for a forward pass:
+We compared our implementation the ScatNetLight MATLAB package
+:cite:`Oyallon_2015_CVPR` and a previous PyTorch implementation, *PyScatWave*
+:cite:`8413168`. The following table shows the average computation time for a
+batch of size :math:`128 \times 3 \times 256 \times 256`:
 
-====================================            =========================
-Name                                            Average time(s) per batch
-====================================            =========================
-MATLAB :cite:`Oyallon_2015_CVPR`                >200
-Kymatio (torch backend, CPU)                    110
-Kymatio (torch backend, 1080Ti GPU)             4.4
-Kymatio (torch backend, V100 GPU)               2.9
-PyScatWave :cite:`8413168`                      1.6
-Kymatio (skcuda backend, 1080Ti GPU)            1.1
-Kymatio (skcuda backend, V100 GPU)              0.49
-====================================            =========================
+==============================================    ==========================
+Name                                              Average time per batch (s)
+==============================================    ==========================
+MATLAB :cite:`Oyallon_2015_CVPR`                  >200
+Kymatio (``torch`` backend, CPU)                  110
+Kymatio (``torch`` backend, 1080Ti GPU)           4.4
+Kymatio (``torch`` backend, V100 GPU)             2.9
+PyScatWave :cite:`8413168`                        1.6
+Kymatio (``skcuda`` backend, 1080Ti GPU)          1.1
+Kymatio (``skcuda`` backend, V100 GPU)            0.49
+==============================================    ==========================
 
 The CPU tests were performed on a 48-core machine.
 
