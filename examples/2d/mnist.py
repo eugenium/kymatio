@@ -81,21 +81,13 @@ def train(model, device, train_loader, optimizer, scat):
 
 def test(model, device, test_loader, scat, display=False):
     model.eval()
-    test_loss = 0
     correct = 0
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(scat(data))
-            test_loss += F.cross_entropy(output, target, size_average=False).item()  # sum up batch loss
             pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
-
-    test_loss /= len(test_loader.dataset)
-    if display:
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
-            test_loss, correct, len(test_loader.dataset),
-            100. * correct / len(test_loader.dataset)))
     return 100. * correct / len(test_loader.dataset)
 ############################################################################
 # Train a simple Hybrid Scattering + CNN model on MNIST.
@@ -167,4 +159,3 @@ for classifier in ['linear','mlp','cnn']:
     print('Scattering order  + ' + classifier
           + ' test accuracy: %.2f'%(acc)
           )
-
