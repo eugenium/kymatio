@@ -138,7 +138,7 @@ def main():
         Scattering features are normalized by batch normalization.
         The model achieves around 88% testing accuracy after 10 epochs.
 
-        scatter 1st order +
+        scatter 1st order + linear achieves 64% in 90 epochs
         scatter 2nd order + linear achieves 70.5% in 90 epochs
 
         scatter + cnn achieves 88% in 15 epochs
